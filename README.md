@@ -12,6 +12,7 @@ API REST que disponibiliza informações sobre atrações turísticas de Balsas-
 - Maicon de Sousa Pontes
 - Gustavo Barros Martins
 - Hugo Alexandre Carvalho Coelho Coutinho
+- Jeferson Machado dos Santos 
 
 Professor: Marcos David Souza Ramos
 
