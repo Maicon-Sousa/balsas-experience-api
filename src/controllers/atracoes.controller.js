@@ -1,41 +1,73 @@
-import atracoes from '../data/atracoes.json' with { type: 'json' };
+import { prisma } from '../prisma.js';
 
-// O maior id já usado, mais um. Assim o id não se repete depois de uma remoção
-function proximoId() {
-  return atracoes.reduce((maior, atracao) => Math.max(maior, atracao.id), 0) + 1;
+// Traz a categoria e as tags junto com cada atração
+const incluir = { categoria: true, tags: true };
+
+// Converte o registro do banco para o formato que a API devolve
+function formatar(atracao) {
+  return {
+    id: atracao.id,
+    nome: atracao.nome,
+    categoria: atracao.categoria.nome,
+    descricao: atracao.descricao,
+    localizacao: { cidade: atracao.cidade, estado: atracao.estado },
+    distanciaCentroKm: atracao.distanciaCentroKm,
+    tags: atracao.tags.map((tag) => tag.nome),
+  };
 }
 
-export function listar(req, res) {
+// Transforma a lista de nomes em "conecte ou crie" a tag
+function conectarTags(tags) {
+  return tags.map((nome) => ({
+    where: { nome },
+    create: { nome },
+  }));
+}
+
+// Ids inválidos (como "abc") viram 404, igual a um id que não existe
+function lerId(valor) {
+  const id = Number(valor);
+  return Number.isInteger(id) ? id : null;
+}
+
+export async function listar(req, res) {
   const { categoria, tag } = req.query;
 
-  let resultado = atracoes;
+  const where = {};
 
   if (categoria) {
-    resultado = resultado.filter(
-      (atracao) => atracao.categoria.toLowerCase() === categoria.toLowerCase()
-    );
+    where.categoria = { nome: { equals: categoria, mode: 'insensitive' } };
   }
 
   if (tag) {
-    resultado = resultado.filter((atracao) =>
-      atracao.tags.some((cadaTag) => cadaTag.toLowerCase() === tag.toLowerCase())
-    );
+    where.tags = { some: { nome: { equals: tag, mode: 'insensitive' } } };
   }
 
-  res.json(resultado);
+  const atracoes = await prisma.atracao.findMany({
+    where,
+    include: incluir,
+    orderBy: { id: 'asc' },
+  });
+
+  res.json(atracoes.map(formatar));
 }
 
-export function buscarPorId(req, res) {
-  const atracao = atracoes.find((item) => item.id === Number(req.params.id));
+export async function buscarPorId(req, res) {
+  const id = lerId(req.params.id);
+
+  const atracao =
+    id === null
+      ? null
+      : await prisma.atracao.findUnique({ where: { id }, include: incluir });
 
   if (!atracao) {
     return res.status(404).json({ erro: 'Atração não encontrada' });
   }
 
-  res.json(atracao);
+  res.json(formatar(atracao));
 }
 
-export function criar(req, res) {
+export async function criar(req, res) {
   const { nome, categoria, descricao, localizacao, distanciaCentroKm, tags } = req.body ?? {};
 
   if (!nome || !categoria || !descricao) {
@@ -44,25 +76,31 @@ export function criar(req, res) {
     });
   }
 
-  const nova = {
-    id: proximoId(),
-    nome,
-    categoria,
-    descricao,
-    localizacao: localizacao ?? { cidade: 'Balsas', estado: 'MA' },
-    distanciaCentroKm: distanciaCentroKm ?? null,
-    tags: tags ?? [],
-  };
+  const nova = await prisma.atracao.create({
+    data: {
+      nome,
+      descricao,
+      cidade: localizacao?.cidade ?? 'Balsas',
+      estado: localizacao?.estado ?? 'MA',
+      distanciaCentroKm: distanciaCentroKm ?? null,
+      categoria: {
+        connectOrCreate: { where: { nome: categoria }, create: { nome: categoria } },
+      },
+      tags: { connectOrCreate: conectarTags(tags ?? []) },
+    },
+    include: incluir,
+  });
 
-  atracoes.push(nova);
-  res.status(201).location(`/atracoes/${nova.id}`).json(nova);
+  res.status(201).location(`/atracoes/${nova.id}`).json(formatar(nova));
 }
 
-export function atualizar(req, res) {
-  const id = Number(req.params.id);
-  const indice = atracoes.findIndex((item) => item.id === id);
+export async function atualizar(req, res) {
+  const id = lerId(req.params.id);
 
-  if (indice === -1) {
+  const existente =
+    id === null ? null : await prisma.atracao.findUnique({ where: { id } });
+
+  if (!existente) {
     return res.status(404).json({ erro: 'Atração não encontrada' });
   }
 
@@ -74,26 +112,40 @@ export function atualizar(req, res) {
     });
   }
 
-  atracoes[indice] = {
-    id,
-    nome,
-    categoria,
-    descricao,
-    localizacao: localizacao ?? { cidade: 'Balsas', estado: 'MA' },
-    distanciaCentroKm: distanciaCentroKm ?? null,
-    tags: tags ?? [],
-  };
+  // Primeiro limpa as tags antigas, depois liga as novas
+  await prisma.atracao.update({ where: { id }, data: { tags: { set: [] } } });
 
-  res.json(atracoes[indice]);
+  const atualizada = await prisma.atracao.update({
+    where: { id },
+    data: {
+      nome,
+      descricao,
+      cidade: localizacao?.cidade ?? 'Balsas',
+      estado: localizacao?.estado ?? 'MA',
+      distanciaCentroKm: distanciaCentroKm ?? null,
+      categoria: {
+        connectOrCreate: { where: { nome: categoria }, create: { nome: categoria } },
+      },
+      tags: { connectOrCreate: conectarTags(tags ?? []) },
+    },
+    include: incluir,
+  });
+
+  res.json(formatar(atualizada));
 }
 
-export function remover(req, res) {
-  const indice = atracoes.findIndex((item) => item.id === Number(req.params.id));
+export async function remover(req, res) {
+  const id = lerId(req.params.id);
 
-  if (indice === -1) {
+  const existente =
+    id === null ? null : await prisma.atracao.findUnique({ where: { id } });
+
+  if (!existente) {
     return res.status(404).json({ erro: 'Atração não encontrada' });
   }
 
-  atracoes.splice(indice, 1);
+  // As avaliações da atração são apagadas junto (onDelete: Cascade)
+  await prisma.atracao.delete({ where: { id } });
+
   res.status(204).end();
 }
