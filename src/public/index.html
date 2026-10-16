@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balsas Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --papel: #efe6d2;
+            --papel-escuro: #e3d7bb;
+            --tinta: #1b1a17;
+            --terracota: #c8451f;
+            --ocre: #d9a21b;
+            --rio: #0f3b4a;
+            --display: 'Anton', Impact, 'Arial Narrow', sans-serif;
+            --texto: 'Newsreader', Georgia, serif;
+            --mono: 'IBM Plex Mono', Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--papel);
+            color: var(--tinta);
+            font-family: var(--texto);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .mono {
+            font-family: var(--mono);
+            font-size: .75rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .wrap {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Topo */
+        .faixa {
+            background: var(--tinta);
+            color: var(--papel);
+            padding: .55rem 0;
+        }
+
+        .faixa .wrap {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .led {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #777;
+            margin-right: .5rem;
+        }
+
+        .ok .led {
+            background: #5ee08a;
+        }
+
+        .erro .led {
+            background: var(--terracota);
+        }
+
+        header {
+            padding: 3rem 0 2rem;
+            border-bottom: 3px solid var(--tinta);
+        }
+
+        h1 {
+            font-family: var(--display);
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: clamp(4rem, 15vw, 10.5rem);
+            line-height: .85;
+            letter-spacing: -.01em;
+        }
+
+        h1 em {
+            display: block;
+            font-family: var(--texto);
+            font-style: italic;
+            text-transform: lowercase;
+            font-size: .42em;
+            line-height: 1;
+            color: var(--terracota);
+            margin-top: .15em;
+            letter-spacing: 0;
+        }
+
+        .sub {
+            max-width: 34rem;
+            margin-top: 1.25rem;
+            font-size: 1.2rem;
+        }
+
+        /* Filtros */
+        .filtros {
+            padding: 1.5rem 0 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem 2rem;
+            align-items: end;
+            justify-content: space-between;
+        }
+
+        .abas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .aba {
+            font-family: var(--mono);
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            background: transparent;
+            color: var(--tinta);
+            border: 2px solid var(--tinta);
+            padding: .45rem .8rem;
+            cursor: pointer;
+        }
+
+        .aba:hover {
+            background: var(--papel-escuro);
+        }
+
+        .aba.ativa {
+            background: var(--tinta);
+            color: var(--papel);
+        }
+
+        .busca {
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+            min-width: 220px;
+        }
+
+        .busca input {
+            font-family: var(--texto);
+            font-size: 1.1rem;
+            color: var(--tinta);
+            background: transparent;
+            border: 0;
+            border-bottom: 2px solid var(--tinta);
+            padding: .3rem 0;
+            outline: none;
+        }
+
+        .busca input:focus {
+            border-bottom-color: var(--terracota);
+        }
+
+        .busca input::placeholder {
+            color: #8a8167;
+            font-style: italic;
+        }
+
+        .resumo {
+            padding: .5rem 0 1.25rem;
+            color: #5b5440;
+        }
+
+        /* Cards */
+        .grade {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding-bottom: 4rem;
+        }
+
+        .card {
+            position: relative;
+            background: var(--papel);
+            border: 2px solid var(--tinta);
+            box-shadow: 6px 6px 0 var(--tinta);
+            padding: 1.25rem 1.25rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: .7rem;
+            transition: transform .12s, box-shadow .12s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 var(--tinta);
+        }
+
+        .card:focus-visible {
+            outline: 3px solid var(--terracota);
+            outline-offset: 3px;
+        }
+
+        .num {
+            font-family: var(--display);
+            font-size: 3.2rem;
+            line-height: .8;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--tinta);
+        }
+
+        .selo {
+            align-self: flex-start;
+            font-family: var(--mono);
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .2rem .5rem;
+            color: var(--papel);
+        }
+
+        .card h3 {
+            font-family: var(--display);
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 1.55rem;
+            line-height: 1.05;
+            letter-spacing: .01em;
+        }
+
+        .card p {
+            flex: 1;
+            color: #3b3829;
+        }
+
+        .dist {
+            font-family: var(--mono);
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            border-top: 1px dashed var(--tinta);
+            padding-top: .6rem;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem .75rem;
+        }
+
+        .tag {
+            font-style: italic;
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+        }
+
+        .tag:hover {
+            color: var(--terracota);
+            border-bottom-color: var(--terracota);
+        }
+
+        .acoes {
+            display: flex;
+            gap: 1rem;
+            border-top: 2px solid var(--tinta);
+            padding-top: .7rem;
+        }
+
+        .link {
+            font-family: var(--mono);
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            background: none;
+            border: 0;
+            color: var(--tinta);
+            cursor: pointer;
+            padding: 0;
+            border-bottom: 2px solid var(--tinta);
+        }
+
+        .link:hover {
+            color: var(--terracota);
+            border-bottom-color: var(--terracota);
+        }
+
+        .link.apagar {
+            margin-left: auto;
+        }
+
+        .vazio {
+            grid-column: 1 / -1;
+            padding: 3rem 0;
+            font-size: 1.4rem;
+            font-style: italic;
+        }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            cursor: pointer;
+            border: 2px solid var(--tinta);
+            padding: .65rem 1.1rem;
+        }
+
+        .btn.cheio {
+            background: var(--terracota);
+            color: var(--papel);
+            box-shadow: 4px 4px 0 var(--tinta);
+        }
+
+        .btn.cheio:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--tinta);
+        }
+
+        .btn.vazado {
+            background: transparent;
+            color: var(--tinta);
+        }
+
+        .btn.vazado:hover {
+            background: var(--papel-escuro);
+        }
+
+        /* Janelas */
+        dialog {
+            margin: auto;
+            width: min(540px, 94vw);
+            background: var(--papel);
+            color: var(--tinta);
+            border: 3px solid var(--tinta);
+            box-shadow: 10px 10px 0 var(--tinta);
+            padding: 1.75rem;
+        }
+
+        dialog::backdrop {
+            background: rgba(27, 26, 23, .6);
+        }
+
+        dialog h2 {
+            font-family: var(--display);
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 2.2rem;
+            line-height: 1;
+            margin-bottom: 1.25rem;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+            margin-bottom: 1rem;
+            flex: 1;
+        }
+
+        .campo label {
+            font-family: var(--mono);
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .campo input,
+        .campo textarea {
+            font-family: var(--texto);
+            font-size: 1.05rem;
+            color: var(--tinta);
+            background: #f7f1e3;
+            border: 2px solid var(--tinta);
+            padding: .5rem .6rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .campo input:focus,
+        .campo textarea:focus {
+            border-color: var(--terracota);
+        }
+
+        .linha {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .dica {
+            font-style: italic;
+            font-size: .9rem;
+            color: #5b5440;
+        }
+
+        .rodape {
+            display: flex;
+            justify-content: flex-end;
+            gap: .75rem;
+            margin-top: 1.25rem;
+        }
+
+        /* Visor de foto */
+        #visor {
+            width: min(860px, 96vw);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .visor-foto {
+            background: var(--tinta);
+            border-bottom: 3px solid var(--tinta);
+        }
+
+        .visor-foto img {
+            display: block;
+            width: 100%;
+            max-height: 62vh;
+            object-fit: cover;
+        }
+
+        .sem-foto {
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .75rem;
+            padding: 2rem;
+            text-align: center;
+            color: var(--papel);
+            background: repeating-linear-gradient(45deg, #26241f, #26241f 14px, #1b1a17 14px, #1b1a17 28px);
+        }
+
+        .sem-foto .grande {
+            font-family: var(--display);
+            font-size: 5rem;
+            line-height: 1;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--papel);
+        }
+
+        .sem-foto code {
+            font-family: var(--mono);
+            background: var(--papel);
+            color: var(--tinta);
+            padding: .15rem .5rem;
+        }
+
+        .visor-corpo {
+            padding: 1.5rem 1.75rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+        }
+
+        .visor-corpo h2 {
+            margin-bottom: 0;
+            font-size: 2.6rem;
+        }
+
+        .visor-corpo p {
+            font-size: 1.15rem;
+        }
+
+        .fechar-x {
+            position: absolute;
+            top: .75rem;
+            right: .75rem;
+            z-index: 2;
+            background: var(--papel);
+            border: 2px solid var(--tinta);
+            width: 2.2rem;
+            height: 2.2rem;
+            font-family: var(--mono);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .fechar-x:hover {
+            background: var(--terracota);
+            color: var(--papel);
+        }
+
+        #toast {
+            position: fixed;
+            left: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 20;
+            background: var(--tinta);
+            color: var(--papel);
+            border-left: 6px solid var(--ocre);
+            padding: .8rem 1.1rem;
+            font-family: var(--mono);
+            font-size: .8rem;
+            transform: translateY(150%);
+            transition: transform .2s;
+        }
+
+        #toast.mostrar {
+            transform: translateY(0);
+        }
+
+        #toast.erro {
+            border-left-color: var(--terracota);
+        }
+
+        footer {
+            border-top: 3px solid var(--tinta);
+            padding: 1.25rem 0 2rem;
+            color: #5b5440;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="faixa">
+        <div class="wrap mono">
+            <span>Balsas · Maranhão</span>
+            <span id="status"><i class="led"></i><span id="statusTexto">verificando api</span></span>
+        </div>
+    </div>
+
+    <header>
+        <div class="wrap">
+            <h1>Balsas <em>experience</em></h1>
+            <p class="sub">Um guia das atrações da cidade: história no centro, cachoeiras a dezenas de quilômetros e um
+                rio inteiro para descer de boia.</p>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <div class="filtros">
+            <div class="abas" id="abas"></div>
+            <div class="busca">
+                <label class="mono" for="filtroTag">Buscar por tag</label>
+                <input id="filtroTag" type="text" placeholder="cachoeira, rio, história...">
+            </div>
+            <button class="btn cheio" id="novo">Nova atração</button>
+        </div>
+
+        <p class="resumo mono" id="resumo"></p>
+        <section class="grade" id="grade"></section>
+    </main>
+
+    <footer>
+        <div class="wrap mono">Dados servidos pela Balsas Experience API</div>
+    </footer>
+
+    <!-- Visor: abre ao clicar no card -->
+    <dialog id="visor">
+        <button class="fechar-x" id="fecharVisor" aria-label="Fechar">X</button>
+        <div class="visor-foto" id="visorFoto"></div>
+        <div class="visor-corpo" id="visorCorpo"></div>
+    </dialog>
+
+    <!-- Formulário: criar e editar -->
+    <dialog id="modal">
+        <h2 id="modalTitulo">Nova atração</h2>
+        <form id="form">
+            <div class="campo">
+                <label for="nome">Nome *</label>
+                <input id="nome" required>
+            </div>
+            <div class="campo">
+                <label for="categoria">Categoria *</label>
+                <input id="categoria" list="listaCategorias" required>
+                <datalist id="listaCategorias"></datalist>
+            </div>
+            <div class="campo">
+                <label for="descricao">Descrição *</label>
+                <textarea id="descricao" rows="3" required></textarea>
+            </div>
+            <div class="linha">
+                <div class="campo">
+                    <label for="distancia">Distância do centro (km)</label>
+                    <input id="distancia" type="number" min="0" step="any" placeholder="vazio = desconhecida">
+                </div>
+                <div class="campo">
+                    <label for="tags">Tags</label>
+                    <input id="tags" placeholder="separe por vírgula">
+                </div>
+            </div>
+            <p class="dica">Ao editar, a atração inteira é substituída (PUT).</p>
+            <div class="rodape">
+                <button type="button" class="btn vazado" id="cancelar">Cancelar</button>
+                <button type="submit" class="btn cheio">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div id="toast"></div>
+
+    <script>
+        // Mesma origem: a página é servida pela própria API, então não precisa de CORS.
+        // Se abrir este arquivo direto do disco, troque por 'http://localhost:3000'.
+        const API = '';
+
+        const CORES = ['#c8451f', '#0f3b4a', '#b07d0a', '#5b6b2e', '#7a2e4a'];
+        const EXTENSOES = ['webp', 'jpg', 'jpeg', 'png'];
+
+        const $ = (id) => document.getElementById(id);
+        const grade = $('grade');
+        const modal = $('modal');
+        const visor = $('visor');
+        const form = $('form');
+
+        let editandoId = null;
+        let categoriaAtiva = '';
+        let categorias = [];
+        let listaAtual = [];
+
+        function esc(texto) {
+            const div = document.createElement('div');
+            div.textContent = texto ?? '';
+            return div.innerHTML;
+        }
+
+        function corDa(categoria) {
+            const i = categorias.indexOf(categoria);
+            return CORES[(i < 0 ? 0 : i) % CORES.length];
+        }
+
+        function aviso(mensagem, erro = false) {
+            const t = $('toast');
+            t.textContent = mensagem;
+            t.className = 'mostrar' + (erro ? ' erro' : '');
+            setTimeout(() => { t.className = ''; }, 3000);
+        }
+
+        async function pedir(caminho, opcoes) {
+            const resposta = await fetch(API + caminho, opcoes);
+            if (resposta.status === 204) return null;
+            const dados = await resposta.json().catch(() => null);
+            if (!resposta.ok) throw new Error(dados?.erro ?? `Erro ${resposta.status}`);
+            return dados;
+        }
+
+        async function verificarSaude() {
+            const el = $('status');
+            try {
+                const r = await pedir('/health');
+                el.className = r.status === 'ok' ? 'ok' : 'erro';
+                $('statusTexto').textContent = r.status === 'ok' ? 'api online' : 'api com problema';
+            } catch {
+                el.className = 'erro';
+                $('statusTexto').textContent = 'api offline';
+            }
+        }
+
+        function desenharAbas() {
+            const abas = ['', ...categorias];
+            $('abas').innerHTML = abas.map((c) =>
+                `<button class="aba ${c === categoriaAtiva ? 'ativa' : ''}" data-cat="${esc(c)}">${c ? esc(c) : 'Todas'}</button>`
+            ).join('');
+            $('listaCategorias').innerHTML = categorias.map((c) => `<option value="${esc(c)}">`).join('');
+        }
+
+        async function carregarCategorias() {
+            const todas = await pedir('/atracoes');
+            categorias = [...new Set(todas.map((a) => a.categoria))].sort();
+            if (!categorias.includes(categoriaAtiva)) categoriaAtiva = '';
+            desenharAbas();
+        }
+
+        async function carregar() {
+            const params = new URLSearchParams();
+            if (categoriaAtiva) params.set('categoria', categoriaAtiva);
+            if ($('filtroTag').value.trim()) params.set('tag', $('filtroTag').value.trim());
+            const consulta = params.toString() ? '?' + params : '';
+
+            try {
+                listaAtual = await pedir('/atracoes' + consulta);
+                desenhar(listaAtual);
+            } catch (e) {
+                grade.innerHTML = `<p class="vazio">Não foi possível carregar: ${esc(e.message)}</p>`;
+            }
+        }
+
+        function desenhar(lista) {
+            $('resumo').textContent = `${lista.length} ${lista.length === 1 ? 'atração' : 'atrações'} · clique em uma para ver a foto`;
+            if (!lista.length) {
+                grade.innerHTML = '<p class="vazio">Nada por aqui com esses filtros.</p>';
+                return;
+            }
+            grade.innerHTML = lista.map((a) => `
+        <article class="card" data-id="${a.id}" tabindex="0" role="button" aria-label="Ver foto de ${esc(a.nome)}">
+          <span class="num">${String(a.id).padStart(2, '0')}</span>
+          <span class="selo" style="background:${corDa(a.categoria)}">${esc(a.categoria)}</span>
+          <h3>${esc(a.nome)}</h3>
+          <p>${esc(a.descricao)}</p>
+          <div class="dist">
+            ${esc(a.localizacao?.cidade)} / ${esc(a.localizacao?.estado)} —
+            ${a.distanciaCentroKm === null ? 'distância n/i' : a.distanciaCentroKm + ' km do centro'}
+          </div>
+          <div class="tags">
+            ${a.tags.map((t) => `<span class="tag" data-tag="${esc(t)}">#${esc(t)}</span>`).join('')}
+          </div>
+          <div class="acoes">
+            <button class="link" data-editar="${a.id}">Editar</button>
+            <button class="link apagar" data-remover="${a.id}">Remover</button>
+          </div>
+        </article>
+      `).join('');
+        }
+
+        /* ---------- Visor de foto ---------- */
+
+        // Procura /img/ID.webp, depois .jpg, .jpeg e .png. Se nenhuma existir, mostra o aviso.
+        function carregarFoto(atracao) {
+            const area = $('visorFoto');
+            area.innerHTML = '';
+            let tentativa = 0;
+
+            const img = new Image();
+            img.alt = atracao.nome;
+
+            img.onload = () => { area.innerHTML = ''; area.appendChild(img); };
+            img.onerror = () => {
+                tentativa += 1;
+                if (tentativa < EXTENSOES.length) {
+                    img.src = `${API}/img/${atracao.id}.${EXTENSOES[tentativa]}`;
+                } else {
+                    area.innerHTML = `
+            <div class="sem-foto">
+              <span class="grande">${String(atracao.id).padStart(2, '0')}</span>
+              <span class="mono">Ainda sem foto</span>
+              <span>Salve a imagem como <code>src/public/img/${atracao.id}.webp</code></span>
+            </div>`;
+                }
+            };
+
+            img.src = `${API}/img/${atracao.id}.${EXTENSOES[0]}`;
+        }
+
+        function abrirVisor(id) {
+            const a = listaAtual.find((item) => item.id === id);
+            if (!a) return;
+
+            carregarFoto(a);
+            $('visorCorpo').innerHTML = `
+        <span class="selo" style="background:${corDa(a.categoria)};align-self:flex-start">${esc(a.categoria)}</span>
+        <h2>${esc(a.nome)}</h2>
+        <p>${esc(a.descricao)}</p>
+        <div class="dist">
+          ${esc(a.localizacao?.cidade)} / ${esc(a.localizacao?.estado)} —
+          ${a.distanciaCentroKm === null ? 'distância n/i' : a.distanciaCentroKm + ' km do centro'}
+        </div>
+        <div class="tags">${a.tags.map((t) => `<span>#${esc(t)}</span>`).join('')}</div>
+      `;
+            visor.showModal();
+        }
+
+        $('fecharVisor').addEventListener('click', () => visor.close());
+        // Clicar fora da janela (no fundo escuro) também fecha
+        visor.addEventListener('click', (evento) => { if (evento.target === visor) visor.close(); });
+
+        /* ---------- Formulário ---------- */
+
+        function abrirModal(atracao = null) {
+            editandoId = atracao?.id ?? null;
+            $('modalTitulo').textContent = atracao ? `Editar nº ${atracao.id}` : 'Nova atração';
+            $('nome').value = atracao?.nome ?? '';
+            $('categoria').value = atracao?.categoria ?? '';
+            $('descricao').value = atracao?.descricao ?? '';
+            $('distancia').value = atracao?.distanciaCentroKm ?? '';
+            $('tags').value = atracao?.tags?.join(', ') ?? '';
+            modal.showModal();
+        }
+
+        form.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            const corpo = {
+                nome: $('nome').value.trim(),
+                categoria: $('categoria').value.trim(),
+                descricao: $('descricao').value.trim(),
+                distanciaCentroKm: $('distancia').value === '' ? null : Number($('distancia').value),
+                tags: $('tags').value.split(',').map((t) => t.trim()).filter(Boolean),
+            };
+            const opcoes = {
+                method: editandoId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corpo),
+            };
+            try {
+                await pedir(editandoId ? `/atracoes/${editandoId}` : '/atracoes', opcoes);
+                modal.close();
+                aviso(editandoId ? 'Atração atualizada' : 'Atração criada');
+                await carregarCategorias();
+                await carregar();
+            } catch (e) {
+                aviso(e.message, true);
+            }
+        });
+
+        /* ---------- Eventos ---------- */
+
+        $('abas').addEventListener('click', (evento) => {
+            if (evento.target.dataset.cat === undefined) return;
+            categoriaAtiva = evento.target.dataset.cat;
+            desenharAbas();
+            carregar();
+        });
+
+        grade.addEventListener('click', async (evento) => {
+            const alvo = evento.target;
+
+            // 1) Ações que não devem abrir a foto
+            const tag = alvo.closest('[data-tag]');
+            if (tag) {
+                $('filtroTag').value = tag.dataset.tag;
+                carregar();
+                return;
+            }
+
+            const editar = alvo.closest('[data-editar]');
+            if (editar) {
+                try { abrirModal(await pedir(`/atracoes/${editar.dataset.editar}`)); }
+                catch (e) { aviso(e.message, true); }
+                return;
+            }
+
+            const remover = alvo.closest('[data-remover]');
+            if (remover) {
+                if (!confirm('Remover esta atração?')) return;
+                try {
+                    await pedir(`/atracoes/${remover.dataset.remover}`, { method: 'DELETE' });
+                    aviso('Atração removida');
+                    await carregarCategorias();
+                    await carregar();
+                } catch (e) { aviso(e.message, true); }
+                return;
+            }
+
+            // 2) Clique em qualquer outra parte do card: abre a foto
+            const card = alvo.closest('.card');
+            if (card) abrirVisor(Number(card.dataset.id));
+        });
+
+        // Acessibilidade: Enter ou espaço no card focado também abre a foto
+        grade.addEventListener('keydown', (evento) => {
+            if (evento.key !== 'Enter' && evento.key !== ' ') return;
+            if (evento.target.classList.contains('card')) {
+                evento.preventDefault();
+                abrirVisor(Number(evento.target.dataset.id));
+            }
+        });
+
+        let espera;
+        $('filtroTag').addEventListener('input', () => {
+            clearTimeout(espera);
+            espera = setTimeout(carregar, 300);
+        });
+
+        $('novo').addEventListener('click', () => abrirModal());
+        $('cancelar').addEventListener('click', () => modal.close());
+
+        (async function iniciar() {
+            await verificarSaude();
+            try { await carregarCategorias(); } catch { /* o erro aparece em carregar() */ }
+            await carregar();
+        })();
+    </script>
+</body>
+
+</html>
